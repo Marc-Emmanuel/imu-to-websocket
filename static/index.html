@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js"></script>
+	</head>
+	<body onload='loaded()'>
+
+		<h1>Arduino MPU 6050 to Websocket</h1>
+		<p id='data'>Data loading...</p>
+
+</body>
+	<script>
+	function loaded(){
+	var obj = {};
+	var socket = io('http://localhost:8080');
+  		socket.on('data', function (data) {
+  			var p = document.getElementById('data');
+  			obj = JSON.parse(data);
+  			if(obj.p){
+  				p.innerHTML ="y: "+ obj.y + ", p: " + obj.p + ", r: " + obj.r;
+  			}
+  		});
+  		var scene = new THREE.Scene();
+		var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 10000);
+		var renderer = new THREE.WebGLRenderer();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+		var geometry = new THREE.BoxGeometry(700, 700, 700, 10, 10, 10);
+		var material = new THREE.MeshBasicMaterial({color: 0xfffff, wireframe: true});
+		var cube = new THREE.Mesh(geometry, material);
+		scene.add(cube);
+		camera.position.z = 1300;        
+		function render() {
+			requestAnimationFrame(render);
+			cube.rotation.x = obj.r * Math.PI /180;
+			cube.rotation.y = -obj.y * Math.PI/180;
+			cube.rotation.z =-obj.p * Math.PI/180;
+			renderer.render(scene, camera);
+		};
+		render();
+}
+	</script>
+</html>
